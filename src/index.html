@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pounce – block coding for Cob</title>
+<link rel="stylesheet" href="css/pounce.css">
+</head>
+<body>
+<header>
+  <h1>🌽 Pounce</h1>
+  <input id="title" aria-label="Project name" value="My Pounce project">
+  <span id="ver" class="ver">…</span>
+  <span class="sp"></span>
+  <button class="ghost" id="open">Open</button><button class="ghost" id="save">Save .pounce</button>
+  <button class="ghost" id="ex">Example</button><button class="ghost" id="clr">Clear</button>
+  <button class="run" id="run">▶ Run</button><button class="stop" id="stop" disabled>■ Stop</button>
+</header>
+<main>
+  <section><h2>Blocks</h2><div id="pal"></div></section>
+  <section><h2>Script</h2><div id="ws"></div>
+    <p class="modline">Modules for <code>shuck</code>: <span id="mods">none</span> <button id="addmod">Add .cob</button></p></section>
+  <aside>
+    <section><div class="bar"><h2>Cob code</h2><button id="cp">Copy</button><button id="cob">Save .cob</button></div><pre id="code"></pre></section>
+    <section><div class="bar"><h2>Console</h2></div><pre id="out" aria-live="polite"></pre></section>
+  </aside>
+</main>
+<footer>Pounce is made with the Cob Software Foundation and the Pouce Foundation. Runs a WebAssembly build of <code>cob_interp</code> compiled from Cob's source.</footer>
+<input type="file" id="file" accept=".pounce,.zip" hidden>
+<input type="file" id="mfile" accept=".cob" multiple hidden>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
