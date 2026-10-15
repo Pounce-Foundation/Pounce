@@ -16,13 +16,16 @@ export const BLOCKS = {
   note:   { cat:'note', parts:['#', F('a',220)], def:{a:'a comment'}, gen:b=>`# ${b.a}` },
 };
 export const make = (t, over = {}) => ({ id: uid++, t, ...BLOCKS[t].def, ...over, ...(BLOCKS[t].c ? { body: [] } : {}) });
-export function gen(list, ind = '') {
-  return list.map(b => {
-    const d = BLOCKS[b.t]; if (!d) return '';
-    const head = ind + d.gen(b) + '\n';
-    return d.c ? head + (b.body.length ? gen(b.body, ind + '    ') : ind + '    # (empty)\n') : head;
-  }).join('');
+// Each generated line remembers which block made it (used to point errors at blocks).
+export function genLines(list, ind = '', out = []) {
+  for (const b of list) {
+    const d = BLOCKS[b.t]; if (!d) continue;
+    out.push({ t: ind + d.gen(b), id: b.id });
+    if (d.c) { if (b.body.length) genLines(b.body, ind + '    ', out); else out.push({ t: ind + '    # (empty)', id: b.id }); }
+  }
+  return out;
 }
+export const gen = list => genLines(list).map(l => l.t + '\n').join('');
 export const usesNoGC = l => l.some(b => BLOCKS[b.t]?.nogc || (b.body && usesNoGC(b.body)));
 export function find(list, id) {
   for (let i = 0; i < list.length; i++) {
@@ -48,4 +51,22 @@ export function sample() {
   const w = make('while', { a: 'count < 5' });
   w.body = [make('pop', { a: '"Harvesting... " + count' }), make('set', { a: 'count', b: 'count + 1' })];
   return [make('note', { a: 'Pounce example' }), make('pop', { a: '"Hello, World!"' }), make('set', { a: 'count', b: '0' }), w];
+}
+
+const quotes = s => { let n = 0; for (let i = 0; i < s.length; i++) { if (s[i] === '\\') i++; else if (s[i] === '"') n++; } return n; };
+// Friendly checks run before Cob sees the program. level 'error' blocks the run.
+export function lint(list, out = []) {
+  for (const b of list) {
+    const d = BLOCKS[b.t]; if (!d) continue;
+    const boxes = d.parts.filter(p => p.k && p.k !== 'fn');
+    if (b.t !== 'note' && boxes.some(p => !(((b.t === 'call' || b.t === 'extern') && p.k === 'b')) && !String(b[p.k] ?? '').trim()))
+      out.push({ id: b.id, level: 'error', text: 'A block has an empty box.', hint: 'Fill in every box, or delete the block.' });
+    if (boxes.some(p => quotes(String(b[p.k] ?? '')) % 2))
+      out.push({ id: b.id, level: 'error', text: 'A quote mark " is missing.', hint: 'Words need a quote at the start and the end, like "Hello".' });
+    if ((b.t === 'set' || b.t === 'harvest') && b.a.trim() && !/^[A-Za-z_]\w*$/.test(b.a.trim()))
+      out.push({ id: b.id, level: 'warn', text: `"${b.a.trim()}" may not work as a variable name.`, hint: 'Use one word with letters, numbers and _ only, like score or my_score.' });
+    if (d.c && !b.body.length) out.push({ id: b.id, level: 'warn', text: 'This while block has nothing inside it.', hint: 'Drag blocks into it, and make sure one changes something so the loop can stop.' });
+    if (b.body) lint(b.body, out);
+  }
+  return out;
 }

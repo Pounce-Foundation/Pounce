@@ -13,12 +13,19 @@
   <span id="ver" class="ver">…</span>
   <span class="sp"></span>
   <button class="ghost" id="open">Open</button><button class="ghost" id="save">Save .pounce</button>
-  <button class="ghost" id="ex">Example</button><button class="ghost" id="clr">Clear</button>
+  <select id="ex" class="ghost" aria-label="Examples"><option value="">Examples…</option></select><label class="ghost simple"><input type="checkbox" id="simple" checked> Simple blocks</label><button class="ghost" id="helpbtn" aria-label="How Pounce works">?</button><button class="ghost" id="clr">Clear</button>
   <button class="run" id="run">▶ Run</button><button class="stop" id="stop" disabled>■ Stop</button>
 </header>
 <main>
   <section><h2>Blocks</h2><div id="pal"></div></section>
-  <section><h2>Script</h2><div id="ws"></div>
+  <section><h2>Script</h2>
+    <div id="help" class="help"><b>How Pounce works</b>
+      <ol><li>Drag blocks into the <b>Script</b>. They run from top to bottom.</li>
+      <li><b>set</b> makes a variable: a box with a name that holds a value.</li>
+      <li><b>while</b> repeats the blocks inside it as long as its question is true. Make sure something inside changes, or it never stops!</li>
+      <li>Press <b>Run</b>. The <b>Console</b> shows what happened. Red blocks mean something needs fixing.</li></ol>
+      <button id="gotit">Got it</button></div>
+    <div id="ws"></div>
     <p class="modline">Modules for <code>shuck</code>: <span id="mods">none</span> <button id="addmod">Add .cob</button></p></section>
   <aside>
     <section><div class="bar"><h2>Cob code</h2><button id="cp">Copy</button><button id="cob">Save .cob</button></div><pre id="code"></pre></section>

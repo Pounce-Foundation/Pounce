@@ -17,6 +17,11 @@ npm run dev     # http://localhost:8080
 npm test        # block codegen + .pounce format tests (Node 18+)
 ```
 
+## Made for beginners
+- **Friendly errors** (`src/js/errors.js`): Cob's messages are rewritten in plain words with a hint, the original is kept in small
+  text, and the block that caused the error gets a red outline. `lint()` in `blocks.js` catches empty boxes and missing quotes before Cob runs.
+- **Examples** menu (`src/js/examples.js`), **Simple blocks** mode (hides memory and desktop-only blocks), and a first-visit help card.
+
 ## Cob in the browser
 `sql_*`, `window_*`, `tcl_eval` and `extern` are silent no-ops with a one-time notice in the WASM build. Pounce marks them as
 desktop-only. `harvest`/`trash` need `--no-gc`, which Pounce passes automatically when a script uses them.

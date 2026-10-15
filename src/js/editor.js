@@ -4,7 +4,7 @@ const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) 
 export function mountEditor({ pal, ws, state, onChange }) {
   function blockEl(b) {
     const d = BLOCKS[b.t], box = el('div', 'blk c-' + d.cat), row = el('div', 'row');
-    box.draggable = true;
+    box.draggable = true; box.dataset.id = b.id;
     for (const p of d.parts) {
       if (typeof p === 'string') row.append(el('span', '', p));
       else if (p.opts) {
@@ -52,16 +52,22 @@ export function mountEditor({ pal, ws, state, onChange }) {
   ws.ondrop = e => { e.preventDefault(); drop(e.dataTransfer.getData('text/plain'), state.script, state.script.length); };
 
   for (const [cat, name] of Object.entries(CATS)) {
-    pal.append(el('h3', '', name));
+    const h = el('h3', '', name); if (cat === 'mem' || cat === 'desk') h.dataset.adv = 1; pal.append(h);
     for (const [t, d] of Object.entries(BLOCKS)) {
       if (d.cat !== cat) continue;
       const e = el('div', 'blk c-' + cat, d.parts.map(p => typeof p === 'string' ? p : p.opts ? p.opts[0] : '…').join(' '));
-      e.draggable = true; e.tabIndex = 0; e.setAttribute('role', 'button');
+      e.draggable = true; e.tabIndex = 0; if (cat === 'mem' || cat === 'desk') e.dataset.adv = 1; e.setAttribute('role', 'button');
       e.ondragstart = ev => { ev.dataTransfer.setData('text/plain', 'new:' + t); ev.dataTransfer.effectAllowed = 'copy'; };
       const add = () => { state.script.push(make(t)); render(); };
       e.onclick = add; e.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); add(); } };
       pal.append(e);
     }
   }
-  return { render };
+  function flag(ids) {
+    ws.querySelectorAll('.err-hl').forEach(e => e.classList.remove('err-hl'));
+    let first = null;
+    for (const id of ids) { const e = ws.querySelector(`[data-id="${id}"]`); if (e) { e.classList.add('err-hl'); first = first || e; } }
+    if (first) first.scrollIntoView({ block: 'nearest' });
+  }
+  return { render, flag };
 }
