@@ -1,7 +1,7 @@
 # 🌽 Pounce
 
 Block coding for [Cob](https://github.com/Cob-Software-Foundation/Cob). Snap blocks together, see the Cob code, and run it
-on a WebAssembly build of the real `cob_interp`. Made with the Cob Software Foundation and the Pouce Foundation.
+on a WebAssembly build of the real `cob_interp`. Made with the Cob Software Foundation and the Pounce Foundation.
 
 ## How it fits together
 - `scripts/build-wasm.sh` fetches Cob (`COB_REF`: branch, tag or commit; pin one for reproducible builds) and runs Cob's own
@@ -26,6 +26,6 @@ Cob has no `if` statement yet, so Pounce has none either.
 A zip (like Scratch's `.sb3`): `project.json` (blocks and metadata), `main.cob` (generated program), `modules/NAME.cob` (for `shuck`).
 
 ## Licensing
-Cob is source-available under PolyForm Noncommercial 1.0.0, and the deployed WASM is built from it: personal, educational and
-non-profit use only. "Cob", "popcorn_comp", "farmer", "Pixel Pulse" and "CSF" are trademarks of the Cob project creators.
-Add your own LICENSE for the Pounce front end.
+Pounce is licensed under PolyForm Noncommercial 1.0.0, the same license as Cob. The deployed WASM is built from Cob's source,
+so the site is for personal, educational and non-profit use. Cob and Pounce are projects of the Cob Software Foundation and
+the Pounce Foundation.
