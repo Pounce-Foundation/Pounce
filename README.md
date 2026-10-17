@@ -20,12 +20,14 @@ npm test        # block codegen + .pounce format tests (Node 18+)
 ## Made for beginners
 - **Friendly errors** (`src/js/errors.js`): Cob's messages are rewritten in plain words with a hint, the original is kept in small
   text, and the block that caused the error gets a red outline. `lint()` in `blocks.js` catches empty boxes and missing quotes before Cob runs.
-- **Examples** menu (`src/js/examples.js`), **Simple blocks** mode (hides memory and desktop-only blocks), and a first-visit help card.
+- **Examples** menu (`src/js/examples.js`, including if/else and else-if examples), **Simple blocks** mode (hides memory and desktop-only blocks), and a first-visit help card.
 
 ## Cob in the browser
 `sql_*`, `window_*`, `tcl_eval` and `extern` are silent no-ops with a one-time notice in the WASM build. Pounce marks them as
 desktop-only. `harvest`/`trash` need `--no-gc`, which Pounce passes automatically when a script uses them.
-Cob has no `if` statement yet, so Pounce has none either.
+`if`, `else if` and `else` blocks need Cob 0.0.7 or newer (that is where Cob gained `if`/`elif`/`else`). `else if` and `else`
+are separate blocks that must sit directly under an `if` (or `else if`), lined up with it. Pounce checks that before running, and
+if the WASM build is older than 0.0.7 it explains that Cob is too old instead of showing a raw syntax error.
 
 ## .pounce files
 A zip (like Scratch's `.sb3`): `project.json` (blocks and metadata), `main.cob` (generated program), `modules/NAME.cob` (for `shuck`).

@@ -32,3 +32,28 @@ test('lint catches kid mistakes', () => {
 test('every starter example is clean', () => {
   for (const e of EXAMPLES) { const s = e.build(); assert.ok(gen(s).length > 0, e.name); assert.equal(lint(s).filter(p => p.level === 'error').length, 0, e.name); }
 });
+test('explains the new if errors', () => {
+  const a = explain('[cob_interp] syntax error at line 3: malformed condition in if statement');
+  assert.equal(a.line, 3); assert.match(a.msg, /question in your if block/);
+  assert.match(explain('[cob_interp] syntax error at line 5: malformed condition in elif statement').msg, /else if block/);
+  assert.match(explain("[cob_interp] syntax error at line 2: 'else' without a matching 'if' at the same indentation").msg, /else block is in the wrong place/);
+  assert.match(explain("[cob_interp] syntax error at line 2: 'elif' without a matching 'if' at the same indentation").msg, /else if block is in the wrong place/);
+  assert.match(explain('[cob_interp] syntax error at line 2: unrecognized statement: if x > 1:').msg, /too old/);
+  assert.match(explain('[cob_interp] syntax error at line 2: unrecognized statement: foo').msg, /foo/);
+});
+test('lint checks else / else if placement', () => {
+  const ok = [make('if', { a: 'x > 1', body: [make('pop', { a: '1' })] }), make('elif', { a: 'x > 0', body: [make('pop', { a: '2' })] }), make('else', { body: [make('pop', { a: '3' })] })];
+  assert.equal(lint(ok).length, 0);
+  assert.equal(lint([make('else', { body: [make('pop', { a: '1' })] })])[0].level, 'error');
+  assert.equal(lint([make('pop', { a: '1' }), make('elif', { a: 'x', body: [make('pop', { a: '1' })] })])[0].level, 'error');
+  const two = [ok[0], ok[2], make('else', { body: [make('pop', { a: '9' })] })];
+  assert.equal(lint(two).filter(p => p.level === 'error').length, 1);
+  assert.equal(lint([make('if', { a: 'x > 1' })])[0].level, 'warn');
+  assert.match(lint([make('if', { a: 'x > 1' }), make('else')]).map(p => p.text).join('|'), /else block has nothing/);
+  assert.equal(lint([make('if', { a: '' , body: [make('pop', { a: '1' })] })])[0].level, 'error');
+});
+test('starter examples keep the blocks inside their loops and ifs', () => {
+  const ex = Object.fromEntries(EXAMPLES.map(e => [e.name, gen(e.build())]));
+  assert.equal(ex['Countdown (loop)'], 'set n = 5\nwhile n > 0:\n    pop(n)\n    set n = n - 1\npop("Liftoff!")\n');
+  for (const [name, code] of Object.entries(ex)) assert.ok(!code.includes('# (empty)'), name + ' has an empty block');
+});

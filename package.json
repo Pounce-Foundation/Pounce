@@ -1,2 +1,2 @@
-{"name":"pounce","version":"0.1.0","private":true,"type":"module","description":"Block coding for Cob, running on a WebAssembly build of cob_interp",
+{"name":"pounce","version":"0.2.0","private":true,"type":"module","description":"Block coding for Cob, running on a WebAssembly build of cob_interp",
 "scripts":{"build":"sh scripts/build-site.sh && bash scripts/build-wasm.sh","build:site":"sh scripts/build-site.sh","build:wasm":"bash scripts/build-wasm.sh","dev":"python3 -m http.server -d dist 8080","test":"node --test test/*.test.mjs"}}

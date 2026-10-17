@@ -8,6 +8,11 @@ export const BLOCKS = {
   pop:    { cat:'out', parts:['pop(', F('a',180), ')'], def:{a:'"Hello, World!"'}, gen:b=>`pop(${b.a})` },
   set:    { cat:'var', parts:['set', F('a',80), '=', F('b',140)], def:{a:'age',b:'20'}, gen:b=>`set ${b.a} = ${b.b}` },
   while:  { cat:'ctl', parts:['while', F('a',150), ':'], def:{a:'count < 5'}, c:1, gen:b=>`while ${b.a}:` },
+  // if / else if / else (Cob 0.0.7+). `else if` and `else` are sibling blocks that must sit directly
+  // under an `if` / `else if` in the same list; lint() checks that and Cob re-checks it.
+  if:     { cat:'ctl', parts:['if', F('a',150), ':'], def:{a:'age >= 18'}, c:1, gen:b=>`if ${b.a}:` },
+  elif:   { cat:'ctl', parts:['else if', F('a',150), ':'], def:{a:'age >= 13'}, c:1, gen:b=>`elif ${b.a}:` },
+  else:   { cat:'ctl', parts:['else:'], def:{}, c:1, gen:()=>'else:' },
   shuck:  { cat:'mod', parts:['shuck', F('a',110)], def:{a:'greeter'}, gen:b=>`shuck ${b.a}` },
   harvest:{ cat:'mem', parts:['set', F('a',80), '= harvest(', F('b',70), ')'], def:{a:'buffer',b:'1024'}, nogc:1, gen:b=>`set ${b.a} = harvest(${b.b})` },
   trash:  { cat:'mem', parts:['trash(', F('a',90), ')'], def:{a:'buffer'}, nogc:1, gen:b=>`trash(${b.a})` },
@@ -15,7 +20,8 @@ export const BLOCKS = {
   extern: { cat:'desk', parts:['extern', F('a',90), '(', F('b',70), ') from', F('c',110)], def:{a:'calculate_fast',b:'x',c:'math_ext.so'}, gen:b=>`extern ${b.a}(${b.b}) from "${b.c}"` },
   note:   { cat:'note', parts:['#', F('a',220)], def:{a:'a comment'}, gen:b=>`# ${b.a}` },
 };
-export const make = (t, over = {}) => ({ id: uid++, t, ...BLOCKS[t].def, ...over, ...(BLOCKS[t].c ? { body: [] } : {}) });
+// Container blocks start with an empty body, but a `body` passed in `over` wins (the starter examples rely on this).
+export const make = (t, over = {}) => ({ id: uid++, t, ...BLOCKS[t].def, ...(BLOCKS[t].c ? { body: [] } : {}), ...over });
 // Each generated line remembers which block made it (used to point errors at blocks).
 export function genLines(list, ind = '', out = []) {
   for (const b of list) {
@@ -55,9 +61,12 @@ export function sample() {
 
 const quotes = s => { let n = 0; for (let i = 0; i < s.length; i++) { if (s[i] === '\\') i++; else if (s[i] === '"') n++; } return n; };
 // Friendly checks run before Cob sees the program. level 'error' blocks the run.
+const niceName = t => t === 'elif' ? 'else if' : t;
 export function lint(list, out = []) {
-  for (const b of list) {
+  for (const [i, b] of list.entries()) {
     const d = BLOCKS[b.t]; if (!d) continue;
+    if ((b.t === 'elif' || b.t === 'else') && !['if', 'elif'].includes(list[i - 1]?.t))
+      out.push({ id: b.id, level: 'error', text: `An ${niceName(b.t)} block must come right after an if block.`, hint: 'Drag it so it sits directly under an if (or else if) block, lined up with it and not inside it. Only one else is allowed per if.' });
     const boxes = d.parts.filter(p => p.k && p.k !== 'fn');
     if (b.t !== 'note' && boxes.some(p => !(((b.t === 'call' || b.t === 'extern') && p.k === 'b')) && !String(b[p.k] ?? '').trim()))
       out.push({ id: b.id, level: 'error', text: 'A block has an empty box.', hint: 'Fill in every box, or delete the block.' });
@@ -65,7 +74,9 @@ export function lint(list, out = []) {
       out.push({ id: b.id, level: 'error', text: 'A quote mark " is missing.', hint: 'Words need a quote at the start and the end, like "Hello".' });
     if ((b.t === 'set' || b.t === 'harvest') && b.a.trim() && !/^[A-Za-z_]\w*$/.test(b.a.trim()))
       out.push({ id: b.id, level: 'warn', text: `"${b.a.trim()}" may not work as a variable name.`, hint: 'Use one word with letters, numbers and _ only, like score or my_score.' });
-    if (d.c && !b.body.length) out.push({ id: b.id, level: 'warn', text: 'This while block has nothing inside it.', hint: 'Drag blocks into it, and make sure one changes something so the loop can stop.' });
+    if (d.c && !b.body.length) out.push(b.t === 'while'
+      ? { id: b.id, level: 'warn', text: 'This while block has nothing inside it.', hint: 'Drag blocks into it, and make sure one changes something so the loop can stop.' }
+      : { id: b.id, level: 'warn', text: `This ${niceName(b.t)} block has nothing inside it.`, hint: 'Drag blocks into it, or delete the block.' });
     if (b.body) lint(b.body, out);
   }
   return out;
