@@ -1,4 +1,4 @@
-import { gen, genLines, lint, usesNoGC } from './blocks.js';
+import { gen, genLines, lint, usesNoGC, usesInput, atLeast } from './blocks.js';
 import { EXAMPLES } from './examples.js';
 import { explain } from './errors.js';
 import { mountEditor } from './editor.js';
@@ -34,7 +34,20 @@ const load = s => { Object.assign(state, s); $('#title').value = state.title; ed
 const dl = (blob, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
 const fileName = () => (state.title.trim() || 'pounce').replace(/[^\w.-]+/g, '_');
 
-const runner = new Runner(show);
+// The "type an answer" row that input() blocks show in the Console.
+let cancelAsk = null;
+const io = {
+  ask: prompt => new Promise(res => {
+    const f = document.createElement('form'), l = document.createElement('label'), i = document.createElement('input'), b = document.createElement('button');
+    f.className = 'ask'; l.textContent = prompt || 'Type your answer'; i.autocomplete = 'off'; i.setAttribute('aria-label', 'Your answer'); b.textContent = 'Enter'; b.type = 'submit';
+    f.append(l, i, b); out.append(f); i.focus(); out.scrollTop = out.scrollHeight;
+    const end = v => { f.remove(); cancelAsk = null; res(v); };
+    f.onsubmit = e => { e.preventDefault(); end(i.value); };
+    cancelAsk = () => end(null);
+  }),
+  cancel: () => cancelAsk && cancelAsk(),
+};
+const runner = new Runner(show, io);
 const busy = b => { $('#run').disabled = b; $('#stop').disabled = !b; };
 $('#run').onclick = async () => {
   out.textContent = ''; flagged.clear(); editor.flag([]);
@@ -42,6 +55,10 @@ $('#run').onclick = async () => {
   const probs = lint(state.script);
   probs.forEach(p => friendly({ level: p.level, msg: p.text, hint: p.hint, id: p.id }));
   if (probs.some(p => p.level === 'error')) { log('s', 'Fix the red blocks, then press Run again.'); return; }
+  if (usesInput(state.script) && cobVersion && !atLeast(cobVersion, '0.0.8')) {
+    friendly({ level: 'error', msg: 'This version of Cob is too old for input blocks.', hint: 'Pounce needs Cob 0.0.8 or newer for the input blocks. Rebuild Pounce against a newer Cob (see COB_REF).' });
+    log('s', 'Remove the input blocks, or update Cob, then press Run again.'); return;
+  }
   const lines = genLines(state.script); lineIds = lines.map(l => l.id);
   busy(true);
   await runner.run(lines.map(l => l.t).join('\n') + '\n', state.modules, usesNoGC(state.script));

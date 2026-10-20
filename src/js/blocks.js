@@ -2,10 +2,13 @@
 let uid = 1;
 export const DESKTOP_FNS = ['sql_open','sql_exec','sql_query','sql_close','window_open','window_label',
   'window_button','window_slider','window_textbox','window_wait','window_close','tcl_eval'];
-export const CATS = { out:'Output', var:'Variables', ctl:'Control', mod:'Modules', mem:'Memory (--no-gc)', desk:'Desktop-only (no-op in browser)', note:'Notes' };
+export const CATS = { out:'Output', inp:'Input', var:'Variables', ctl:'Control', mod:'Modules', mem:'Memory (--no-gc)', desk:'Desktop-only (no-op in browser)', note:'Notes' };
 const F = (k, w) => ({ k, w });
 export const BLOCKS = {
   pop:    { cat:'out', parts:['pop(', F('a',180), ')'], def:{a:'"Hello, World!"'}, gen:b=>`pop(${b.a})` },
+  // Console input (Cob 0.0.8+). The prompt box may be empty: Cob accepts input().
+  ask:    { cat:'inp', parts:['set', F('a',80), '= input(', F('b',170), ')'], def:{a:'name',b:'"What is your name? "'}, input:1, gen:b=>`set ${b.a} = input(${b.b})` },
+  asknum: { cat:'inp', parts:['set', F('a',80), '= input_int(', F('b',170), ')'], def:{a:'age',b:'"How old are you? "'}, input:1, gen:b=>`set ${b.a} = input_int(${b.b})` },
   set:    { cat:'var', parts:['set', F('a',80), '=', F('b',140)], def:{a:'age',b:'20'}, gen:b=>`set ${b.a} = ${b.b}` },
   while:  { cat:'ctl', parts:['while', F('a',150), ':'], def:{a:'count < 5'}, c:1, gen:b=>`while ${b.a}:` },
   // if / else if / else (Cob 0.0.7+). `else if` and `else` are sibling blocks that must sit directly
@@ -33,6 +36,13 @@ export function genLines(list, ind = '', out = []) {
 }
 export const gen = list => genLines(list).map(l => l.t + '\n').join('');
 export const usesNoGC = l => l.some(b => BLOCKS[b.t]?.nogc || (b.body && usesNoGC(b.body)));
+export const usesInput = l => l.some(b => BLOCKS[b.t]?.input || (b.body && usesInput(b.body)));
+// '0.0.8' >= '0.0.7' style comparison for the Cob version the WASM build reports.
+export function atLeast(v, min) {
+  const n = x => String(x).trim().split('.').map(p => parseInt(p, 10) || 0), a = n(v), m = n(min);
+  for (let i = 0; i < 3; i++) { if ((a[i] || 0) !== (m[i] || 0)) return (a[i] || 0) > (m[i] || 0); }
+  return true;
+}
 export function find(list, id) {
   for (let i = 0; i < list.length; i++) {
     if (list[i].id === id) return { list, i, b: list[i] };
@@ -68,11 +78,11 @@ export function lint(list, out = []) {
     if ((b.t === 'elif' || b.t === 'else') && !['if', 'elif'].includes(list[i - 1]?.t))
       out.push({ id: b.id, level: 'error', text: `An ${niceName(b.t)} block must come right after an if block.`, hint: 'Drag it so it sits directly under an if (or else if) block, lined up with it and not inside it. Only one else is allowed per if.' });
     const boxes = d.parts.filter(p => p.k && p.k !== 'fn');
-    if (b.t !== 'note' && boxes.some(p => !(((b.t === 'call' || b.t === 'extern') && p.k === 'b')) && !String(b[p.k] ?? '').trim()))
+    if (b.t !== 'note' && boxes.some(p => !((['call', 'extern', 'ask', 'asknum'].includes(b.t) && p.k === 'b')) && !String(b[p.k] ?? '').trim()))
       out.push({ id: b.id, level: 'error', text: 'A block has an empty box.', hint: 'Fill in every box, or delete the block.' });
     if (boxes.some(p => quotes(String(b[p.k] ?? '')) % 2))
       out.push({ id: b.id, level: 'error', text: 'A quote mark " is missing.', hint: 'Words need a quote at the start and the end, like "Hello".' });
-    if ((b.t === 'set' || b.t === 'harvest') && b.a.trim() && !/^[A-Za-z_]\w*$/.test(b.a.trim()))
+    if (['set', 'harvest', 'ask', 'asknum'].includes(b.t) && b.a.trim() && !/^[A-Za-z_]\w*$/.test(b.a.trim()))
       out.push({ id: b.id, level: 'warn', text: `"${b.a.trim()}" may not work as a variable name.`, hint: 'Use one word with letters, numbers and _ only, like score or my_score.' });
     if (d.c && !b.body.length) out.push(b.t === 'while'
       ? { id: b.id, level: 'warn', text: 'This while block has nothing inside it.', hint: 'Drag blocks into it, and make sure one changes something so the loop can stop.' }

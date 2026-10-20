@@ -17,7 +17,7 @@ h2{margin:0;padding:10px 12px 4px;font-size:14px;color:var(--mute)}h3{margin:12p
 .modline{margin:0;padding:8px 14px;color:var(--mute);font-size:13px}.modline button{padding:2px 8px;font-size:12px;background:var(--line);color:var(--ink)}
 .blk{border-radius:9px;color:#fff;font-weight:700;padding:6px 8px;box-shadow:0 2px 0 rgba(0,0,0,.22)}
 .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.c-out,.c-note{background:#f2b705;color:#2b2100}.c-var{background:#e8782a}.c-ctl{background:var(--husk)}.c-mod{background:#2a8f9c}.c-mem{background:#8a5fc4}.c-desk{background:#6b7a8f}
+.c-out,.c-note{background:#f2b705;color:#2b2100}.c-var{background:#e8782a}.c-inp{background:#d6457a}.c-ctl{background:var(--husk)}.c-mod{background:#2a8f9c}.c-mem{background:#8a5fc4}.c-desk{background:#6b7a8f}
 .blk input,.blk select{font:inherit;font-weight:600;border:0;border-radius:14px;padding:3px 10px;background:#fff;color:#222;max-width:100%}
 .x{margin-left:auto;background:rgba(0,0,0,.2);color:inherit;padding:0 8px;border-radius:50%;line-height:22px}
 .c{margin:6px 0 2px 14px;padding:2px 0 2px 8px;border-left:10px solid rgba(0,0,0,.2);min-height:26px}
@@ -39,3 +39,7 @@ body.simple-on [data-adv]{display:none}
 .friend{margin:6px 0;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.07);border-left:5px solid #ff6b5b;color:#fff;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;font-size:14px}
 .friend.warn{border-color:#f2b705}.friend.note{border-color:#9bb08f}
 .friend b{display:block}.friend .hint{display:block;color:#ffe27a;margin-top:2px}.friend small{display:block;margin-top:4px;color:#9bb08f;font:12px ui-monospace,Menlo,Consolas,monospace}
+
+.ask{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.1);border-left:5px solid #d6457a;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;font-size:14px;color:#fff}
+.ask label{font-weight:700}.ask input{flex:1;min-width:120px;font:inherit;border:0;border-radius:14px;padding:3px 10px;background:#fff;color:#222}.ask button{background:#f2b705;color:#2b2100;padding:3px 12px}
+.ask input:focus-visible{outline:3px solid #f2b705;outline-offset:1px}

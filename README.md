@@ -14,13 +14,23 @@ on a WebAssembly build of the real `cob_interp`. Made with the Cob Software Foun
 ```
 npm run build   # needs Emscripten (emcc) and git
 npm run dev     # http://localhost:8080
-npm test        # block codegen + .pounce format tests (Node 18+)
+npm test        # block codegen, input replay, worker and .pounce format tests (Node 18+)
+                # COB_INTERP=/path/to/Cob/bin/cob_interp npm test   also runs everything through real Cob
 ```
 
 ## Made for beginners
 - **Friendly errors** (`src/js/errors.js`): Cob's messages are rewritten in plain words with a hint, the original is kept in small
   text, and the block that caused the error gets a red outline. `lint()` in `blocks.js` catches empty boxes and missing quotes before Cob runs.
 - **Examples** menu (`src/js/examples.js`, including if/else and else-if examples), **Simple blocks** mode (hides memory and desktop-only blocks), and a first-visit help card.
+
+## Asking questions (input)
+The **Input** blocks, `set name = input("…")` and `set age = input_int("…")`, ask the person running the program to type
+an answer in the Console (needs Cob 0.0.8 or newer; Pounce says so if the WASM build is older). The prompt box can be empty.
+A browser can't pause a worker to wait for the keyboard, so Pounce **replays**: the run stops when the program asks, the
+Console shows a box, and then the program runs again from the top with every answer so far (`src/js/session.js`). Lines that
+are already on screen are not repeated, and answers are echoed like a terminal. That is safe because the browser build has no
+randomness, clock or files. `cob-worker.js` feeds one answer per `read` and reports `need` when it runs out. A program that
+asks more than 500 questions is stopped. A non-number typed into `input_int` gives 0 plus a friendly warning.
 
 ## Cob in the browser
 `sql_*`, `window_*`, `tcl_eval` and `extern` are silent no-ops with a one-time notice in the WASM build. Pounce marks them as

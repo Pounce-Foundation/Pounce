@@ -6,6 +6,7 @@ const RULES = [
   [/^(?:malformed condition in|expected ':' to open) (if|elif)\b/, m => [`Cob couldn't understand the question in your ${m[1] === 'elif' ? 'else if' : 'if'} block.`, 'A question compares two things, like age >= 18 or name == "Ada". You can use < > <= >= == !=']],
   [/^'(else|elif)' without a matching 'if'/, m => [`An ${m[1] === 'elif' ? 'else if' : 'else'} block is in the wrong place.`, 'It must sit directly under an if block (or an else if block), lined up with it. Each if can have only one else, and it goes last.']],
   [/^unrecognized statement: (if|elif|else)\b/, () => ['This version of Cob is too old to know if blocks.', 'Pounce needs Cob 0.0.7 or newer for if, else if and else. Rebuild Pounce against a newer Cob (see COB_REF).']],
+  [/^input_int\(\) got non-numeric input "(.*)"; treated as 0/, m => [`You typed "${m[1]}", but this question needs a number, so Cob used 0.`, 'Type digits only, like 12 or 250. Use the text version (input) if words are OK.']],
   [/^malformed expression in pop/, () => ["Cob couldn't understand what is inside pop( ).", 'Put words in quotes ("Hi") and join things with +, like "Score: " + score.']],
   [/^malformed expression in set/, () => ["Cob couldn't understand the value in your set block.", 'Use a number like 5, words in quotes like "Ada", or math like score + 1.']],
   [/^expected '=' in set/, () => ['A set block needs a name and then a value.', 'Names are one word with no spaces, like score or my_score.']],
