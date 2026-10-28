@@ -1,4 +1,4 @@
-import { gen, genLines, lint, usesNoGC, usesInput, atLeast } from './blocks.js';
+import { gen, genLines, lint, usesNoGC, minCob, atLeast } from './blocks.js';
 import { EXAMPLES } from './examples.js';
 import { explain } from './errors.js';
 import { mountEditor } from './editor.js';
@@ -55,11 +55,13 @@ $('#run').onclick = async () => {
   const probs = lint(state.script);
   probs.forEach(p => friendly({ level: p.level, msg: p.text, hint: p.hint, id: p.id }));
   if (probs.some(p => p.level === 'error')) { log('s', 'Fix the red blocks, then press Run again.'); return; }
-  if (usesInput(state.script) && cobVersion && !atLeast(cobVersion, '0.0.8')) {
-    friendly({ level: 'error', msg: 'This version of Cob is too old for input blocks.', hint: 'Pounce needs Cob 0.0.8 or newer for the input blocks. Rebuild Pounce against a newer Cob (see COB_REF).' });
-    log('s', 'Remove the input blocks, or update Cob, then press Run again.'); return;
+  const need = minCob(state.script);
+  if (need && cobVersion && !atLeast(cobVersion, need)) {
+    friendly({ level: 'error', msg: `This version of Cob is too old for some of these blocks.`, hint: `The ask, recipe and library blocks need Cob ${need} or newer. Rebuild Pounce against a newer Cob (see COB_REF).` });
+    log('s', 'Remove those blocks, or update Cob, then press Run again.'); return;
   }
-  const lines = genLines(state.script); lineIds = lines.map(l => l.id);
+  // one random seed per Run click: every replay of this run (see session.js) then rolls the same numbers
+  const lines = genLines(state.script, { seed: Math.floor(Math.random() * 2147483647) }); lineIds = lines.map(l => l.id);
   busy(true);
   await runner.run(lines.map(l => l.t).join('\n') + '\n', state.modules, usesNoGC(state.script));
   busy(false);

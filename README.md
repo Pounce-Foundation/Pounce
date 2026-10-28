@@ -23,18 +23,32 @@ npm test        # block codegen, input replay, worker and .pounce format tests (
   text, and the block that caused the error gets a red outline. `lint()` in `blocks.js` catches empty boxes and missing quotes before Cob runs.
 - **Examples** menu (`src/js/examples.js`, including if/else and else-if examples), **Simple blocks** mode (hides memory and desktop-only blocks), and a first-visit help card.
 
-## Asking questions (input)
-The **Input** blocks, `set name = input("…")` and `set age = input_int("…")`, ask the person running the program to type
-an answer in the Console (needs Cob 0.0.8 or newer; Pounce says so if the WASM build is older). The prompt box can be empty.
+## Recipes and the standard library (Cob 0.0.9)
+- **Recipes** are Cob's functions. The **recipe** block (`recipe add(a, b):`) holds blocks and sits at the top of the script, a
+  **serve** block inside it hands a value back, and the **run** block calls one on a line of its own (`greet("Ada")`). Inside a
+  `set` or `pop` box you can use a recipe in math: `set total = add(2, 3)`. Pounce checks recipe placement, names and inputs before
+  running, and rewrites Cob's recipe errors in plain words.
+- **Library blocks** (`set big = kernel_upper(word)`) use Cob's corn-themed standard library. Cob's library modules are loaded with
+  `shuck`; **Pounce writes the shuck lines for you**: any library function that appears in a block (even typed into a `set` box) makes
+  Pounce add the right `shuck` at the top of the generated program, unless the script already has its own shuck block for it. The
+  browser build has `porch` (the ask blocks), `cornmath` and `kernels` and `almanac` built in; `pantry` (SQLite), `barn` (windows),
+  `tassel` (Tcl/Tk) and `granary` (files) are desktop-only and are quiet no-ops here, like the Desktop-only blocks always were.
+- **Repeatable runs:** because of the replay below, a run must give the same result every time it is replayed. Pounce adds
+  `scatter_seed(<n>)` (a new n for each Run click) when a script uses `scatter_rand`, and does not offer `almanac` (clock) blocks; it
+  warns if one is typed into a script that also asks questions. The *Code* panel and *Save as .cob* show the program without that seed.
+
+## Asking questions (porch)
+The **Input** blocks, `set name = porch_ask("…")` and `set age = porch_ask_int("…")` (the `porch` library), ask the person running
+the program to type an answer in the Console (needs Cob 0.0.9 or newer; Pounce says so if the WASM build is older). The prompt box can be empty.
 A browser can't pause a worker to wait for the keyboard, so Pounce **replays**: the run stops when the program asks, the
 Console shows a box, and then the program runs again from the top with every answer so far (`src/js/session.js`). Lines that
 are already on screen are not repeated, and answers are echoed like a terminal. That is safe because the browser build has no
-randomness, clock or files. `cob-worker.js` feeds one answer per `read` and reports `need` when it runs out. A program that
-asks more than 500 questions is stopped. A non-number typed into `input_int` gives 0 plus a friendly warning.
+randomness (see above), clock or files. `cob-worker.js` feeds one answer per `read` and reports `need` when it runs out. A program that
+asks more than 500 questions is stopped. A non-number typed into `porch_ask_int` gives 0 plus a friendly warning.
 
 ## Cob in the browser
-`sql_*`, `window_*`, `tcl_eval` and `extern` are silent no-ops with a one-time notice in the WASM build. Pounce marks them as
-desktop-only. `harvest`/`trash` need `--no-gc`, which Pounce passes automatically when a script uses them.
+The `pantry_*`, `barn_*`, `tassel_*` and `granary_*` functions and `extern` are silent no-ops with a one-time notice per library in
+the WASM build. Pounce marks them as desktop-only. `harvest`/`trash` need `--no-gc`, which Pounce passes automatically when a script uses them.
 `if`, `else if` and `else` blocks need Cob 0.0.7 or newer (that is where Cob gained `if`/`elif`/`else`). `else if` and `else`
 are separate blocks that must sit directly under an `if` (or `else if`), lined up with it. Pounce checks that before running, and
 if the WASM build is older than 0.0.7 it explains that Cob is too old instead of showing a raw syntax error.

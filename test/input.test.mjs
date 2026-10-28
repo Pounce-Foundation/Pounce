@@ -11,10 +11,10 @@ import { explain } from '../src/js/errors.js';
 import { runSession, MAX_ANSWERS } from '../src/js/session.js';
 import { saveProject, loadProject } from '../src/js/project.js';
 
-test('input blocks generate Cob input() calls', () => {
+test('input blocks generate Cob porch_ask() calls (and shuck porch)', () => {
   assert.equal(gen([make('ask', { a: 'name', b: '"Name? "' }), make('asknum', { a: 'age', b: '"Age? "' })]),
-    'set name = input("Name? ")\nset age = input_int("Age? ")\n');
-  assert.equal(gen([make('ask', { a: 'x', b: '' })]), 'set x = input()\n');
+    'shuck porch\nset name = porch_ask("Name? ")\nset age = porch_ask_int("Age? ")\n');
+  assert.equal(gen([make('ask', { a: 'x', b: '' })]), 'shuck porch\nset x = porch_ask()\n');
 });
 test('input blocks: lint, detection, version check, save/load', async () => {
   assert.equal(lint([make('ask', { a: 'x', b: '' })]).length, 0);                       // empty prompt is fine
@@ -22,13 +22,13 @@ test('input blocks: lint, detection, version check, save/load', async () => {
   assert.equal(lint([make('asknum', { a: 'my age', b: '"Q"' })])[0].level, 'warn');
   assert.equal(lint([make('ask', { a: 'x', b: '"Q' })])[0].level, 'error');
   assert.ok(usesInput([make('while', { a: '1', body: [make('asknum')] })]) && !usesInput([make('pop')]));
-  assert.ok(atLeast('0.0.8', '0.0.8') && atLeast('0.1.0', '0.0.8') && !atLeast('0.0.7', '0.0.8'));
+  assert.ok(atLeast('0.0.9', '0.0.9') && atLeast('0.1.0', '0.0.9') && !atLeast('0.0.8', '0.0.9'));
   const s = { title: 'T', script: [make('ask'), make('asknum')], modules: {} };
   assert.equal(gen((await loadProject(await saveProject(s).arrayBuffer())).script), gen(s.script));
-  assert.equal(gen(clean([{ t: 'ask', a: 'n\nx', b: '"q"' }])), 'set n x = input("q")\n');
+  assert.equal(gen(clean([{ t: 'ask', a: 'n\nx', b: '"q"' }])), 'shuck porch\nset n x = porch_ask("q")\n');
 });
 test('friendly message for a non-numeric answer', () => {
-  const f = explain('[cob_interp] warning: input_int() got non-numeric input "abc"; treated as 0');
+  const f = explain('[porch] warning: porch_ask_int() got non-numeric input "abc"; treated as 0');
   assert.equal(f.level, 'warn'); assert.match(f.msg, /"abc"/); assert.match(f.msg, /number/);
 });
 

@@ -1,8 +1,9 @@
 // A browser can't pause a worker to wait for the keyboard, so input() works by replaying: run the
 // program, and when it asks for a line stop it, ask the person, then run it again from the top with
 // every answer so far. Output that is already on screen is skipped, so it looks like one continuous
-// run. This is safe because the browser build of Cob has no randomness, clock or files: the same
-// answers always give the same run. DOM-free (tested in Node).
+// run. This is safe because a run is repeatable: the browser build has no files, Pounce seeds scatter_rand once
+// per Run click (see genLines), and the clock library (almanac) is not offered as blocks, so the same answers
+// always give the same run. DOM-free (tested in Node).
 export const MAX_ANSWERS = 500;
 const oneLine = a => String(a ?? '').replace(/[\r\n]+/g, ' ');
 // once(inputs, on) -> Promise<{ need?: { prompt } }>   runs the program once, calling on(msg) for each message

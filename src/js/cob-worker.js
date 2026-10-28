@@ -1,6 +1,6 @@
 // Runs one Cob program in a fresh cob_interp WASM instance (same MODULARIZE/EXIT_RUNTIME pattern as
 // Cob's own docs/play page). Terminating this worker stops a runaway script.
-// input(): the page replays the program with the answers so far (see session.js). Answers are fed to
+// porch_ask() / porch_ask_int(): the page replays the program with the answers so far (see session.js). Answers are fed to
 // stdin one line per read; when the program asks for one we don't have, we report 'need' (with the
 // unfinished prompt line) and the page stops this worker.
 importScripts('../wasm/cob_interp.js');
@@ -9,7 +9,7 @@ onmessage = async e => {
   const { code, modules, noGC, inputs = [] } = e.data;
   let halted = false;
   const post = (k, t) => { if (!halted) postMessage({ k, t }); };
-  // Output arrives byte by byte so a prompt with no newline, like input("Name? "), can be seen.
+  // Output arrives byte by byte so a prompt with no newline, like porch_ask("Name? "), can be seen.
   const sink = k => {
     let b = [];
     const take = () => { const s = dec.decode(new Uint8Array(b)); b = []; return s; };
