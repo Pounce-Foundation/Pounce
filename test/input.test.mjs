@@ -67,7 +67,7 @@ test('a program that asks forever is cut off', async () => {
   assert.equal(runs, MAX_ANSWERS + 1); assert.match(seen.at(-1).t, /more than 500/);
 });
 
-// ---- the real worker file, against a fake Emscripten module -----------------------------------
+// ---- the real worker file, against a fake Cob module -----------------------------------
 // The fake follows what Emscripten's stdin device does: one read() asks the stdin callback for bytes
 // until it returns null (or the buffer is full). The "program" is Cob's input()/pop() in miniature.
 function runWorker(inputs) {

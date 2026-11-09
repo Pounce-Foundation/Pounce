@@ -4,15 +4,17 @@ Block coding for [Cob](https://github.com/Cob-Software-Foundation/Cob). Snap blo
 on a WebAssembly build of the real `cob_interp`. Made with the Cob Software Foundation and the Pouce Foundation.
 
 ## How it fits together
-- `scripts/build-wasm.sh` fetches Cob (`COB_REF`: branch, tag or commit; pin one for reproducible builds) and runs Cob's own
-  `make wasm` (Emscripten, `-DCOB_WASM`, no other dependencies). Output goes to `dist/wasm/`.
+- `scripts/build-wasm.sh` fetches Cob (`COB_REF`: branch, tag or commit; currently `v0.0.9-rc`, pinned for reproducible builds)
+  and runs Cob's own `make wasm`, which builds `crates/cob-wasm` with Cargo for `wasm32-unknown-unknown`. Output goes to `dist/wasm/`.
+  Its loader, `docs/play/cob_interp.js`, needs one fix to run inside a Web Worker; `scripts/cob-glue-worker.patch` applies it (skipped once
+  the pinned Cob already contains it).
 - `src/` is the front end (plain ES modules, no dependencies). `scripts/build-site.sh` copies it to `dist/`.
 - Each run uses a fresh WASM instance in a Web Worker; **Stop** terminates the worker.
 - `.github/workflows/pages.yml` builds both and deploys `dist/` to GitHub Pages (Settings → Pages → Source: GitHub Actions).
 
 ## Local use
 ```
-npm run build   # needs Emscripten (emcc) and git
+npm run build   # needs git, make, cargo and: rustup target add wasm32-unknown-unknown
 npm run dev     # http://localhost:8080
 npm test        # block codegen, input replay, worker and .pounce format tests (Node 18+)
                 # COB_INTERP=/path/to/Cob/bin/cob_interp npm test   also runs everything through real Cob
