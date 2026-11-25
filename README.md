@@ -4,7 +4,7 @@ Block coding for [Cob](https://github.com/Cob-Software-Foundation/Cob). Snap blo
 on a WebAssembly build of the real `cob_interp`. Made with the Cob Software Foundation and the Pouce Foundation.
 
 ## How it fits together
-- `scripts/build-wasm.sh` fetches Cob (`COB_REF`: branch, tag or commit; currently `v0.0.9-rc`, pinned for reproducible builds)
+- `scripts/build-wasm.sh` fetches Cob (`COB_REF`: branch, tag or commit; currently `v0.1.0` (beta), pinned for reproducible builds)
   and runs Cob's own `make wasm`, which builds `crates/cob-wasm` with Cargo for `wasm32-unknown-unknown`. Output goes to `dist/wasm/`.
   Its loader, `docs/play/cob_interp.js`, needs one fix to run inside a Web Worker; `scripts/cob-glue-worker.patch` applies it (skipped once
   the pinned Cob already contains it).

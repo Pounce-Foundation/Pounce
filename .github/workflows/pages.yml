@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    # Cob's browser module is built with Cargo (`make wasm` in Cob v0.0.9-rc), not Emscripten.
+    # Cob's browser module is built with Cargo (`make wasm` in Cob v0.1.0), not Emscripten.
     - name: Install Rust with the WebAssembly target
       uses: dtolnay/rust-toolchain@stable
       with:
@@ -27,7 +27,7 @@ jobs:
     - name: Copy the Pounce front end
       run: sh scripts/build-site.sh
 
-    - name: Build Cob v0.0.9-rc from source to WebAssembly
+    - name: Build Cob v0.1.0 from source to WebAssembly
       run: bash scripts/build-wasm.sh
 
     - uses: actions/upload-pages-artifact@v3
