@@ -4,6 +4,9 @@ const ask = (a, b) => make('ask', { a, b }), asknum = (a, b) => make('asknum', {
 const loop = (a, ...body) => make('while', { a, body });
 const recipe = (a, b, ...body) => make('recipe', { a, b, body }), serve = a => make('serve', { a }), run = (a, b) => make('run', { a, b });
 const lib = (a, fn, b) => make('lib', { a, fn, b });
+const listlit = (a, b) => make('listlit', { a, b }), listidx = (a, b, c) => make('listidx', { a, b, c }), foreach = (a, b, ...body) => make('foreach', { a, b, body });
+const newlist = a => make('newlist', { a }), listadd = (a, b) => make('listadd', { a, b }), listget = (a, b, c) => make('listget', { a, b, c }), listlen = (a, b) => make('listlen', { a, b }), listsort = a => make('listsort', { a });
+const newarray = (a, b) => make('newarray', { a, b }), arrset = (a, b, c) => make('arrset', { a, b, c }), arrget = (a, b, c) => make('arrget', { a, b, c });
 const iff = (a, ...body) => make('if', { a, body }), elif = (a, ...body) => make('elif', { a, body }), els = (...body) => make('else', { body });
 export const EXAMPLES = [
   { name: 'Hello, Cob!', build: () => [note('Your first program'), pop('"Hello, Cob!"'), pop('"I was made with blocks."')] },
@@ -29,5 +32,12 @@ export const EXAMPLES = [
     lib('mix', 'kernel_replace', 'word, "o", "0"'), pop('mix')] },
   { name: 'Roll a die (math library)', build: () => [note('scatter_rand picks a random number from the first to the last, including both'),
     lib('seed', 'scatter_seed', '42'), set('i', '1'), loop('i <= 5', lib('roll', 'scatter_rand', '1, 6'), pop('"Roll " + i + ": " + roll'), set('i', 'i + 1'))] },
+  { name: 'Shopping list (lists)', build: () => [note('A list holds numbers and words. Positions start at 0, and -1 is the last one.'),
+    listlit('fruit', '"pear", "apple", "fig"'), listadd('fruit', '"plum"'), listsort('fruit'),
+    listlen('n', 'fruit'), pop('"I have " + n + " fruits:"'),
+    foreach('f', 'fruit', pop('f')), listidx('last', 'fruit', '-1'), pop('"The last one is " + last')] },
+  { name: 'Row of numbers (arrays)', build: () => [note('An array has a fixed number of slots, all 0 to start with'),
+    newarray('row', '5'), arrset('row', '0', '10'), arrset('row', '1', '20'), arrset('row', '2', '30'),
+    arrget('x', 'row', '1'), pop('"Slot 1 holds " + x'), lib('total', 'furrow_sum', 'row'), pop('"All the slots add up to " + total')] },
   { name: 'Staircase', build: () => [set('stars', '"*"'), set('row', '1'), loop('row <= 5', pop('stars'), set('stars', 'stars + "*"'), set('row', 'row + 1'))] },
 ];

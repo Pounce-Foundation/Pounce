@@ -3,23 +3,27 @@ let uid = 1;
 // Cob 0.0.9: everything beyond the core language is a corn-themed standard library of shared libraries,
 // brought in with `shuck <module>`. Pounce writes the shuck lines for you (see genLines).
 // Modules marked `web` are compiled into the browser build; the others need the desktop Cob.
+// `since` is the first Cob version that has the module (bushel and furrow arrived in 0.0.10).
 export const STDLIB = {
   porch:    { web: 1, fns: ['porch_ask', 'porch_ask_int'] },
   cornmath: { web: 1, fns: ['husk_abs', 'ear_max', 'ear_min', 'stalk_pow', 'stalk_sqrt', 'silk_mod', 'scatter_seed', 'scatter_rand'] },
   kernels:  { web: 1, fns: ['kernel_len', 'kernel_upper', 'kernel_lower', 'kernel_slice', 'kernel_find', 'kernel_repeat', 'kernel_trim',
                             'kernel_replace', 'kernel_char', 'kernel_code', 'kernel_from_code', 'kernel_to_int', 'kernel_starts', 'kernel_ends'] },
   almanac:  { web: 1, fns: ['almanac_now', 'almanac_ticks', 'almanac_nap', 'almanac_year', 'almanac_stamp'] },
+  bushel:   { web: 1, since: '0.0.10', fns: ['bushel_new', 'bushel_free', 'bushel_len', 'bushel_push', 'bushel_get', 'bushel_set', 'bushel_insert', 'bushel_remove', 'bushel_clear',
+                            'bushel_find', 'bushel_sort', 'bushel_reverse', 'bushel_extend', 'bushel_copy', 'bushel_join', 'bushel_split'] },
+  furrow:   { web: 1, since: '0.0.10', fns: ['furrow_new', 'furrow_free', 'furrow_len', 'furrow_get', 'furrow_set', 'furrow_fill', 'furrow_swap', 'furrow_find', 'furrow_sum',
+                            'furrow_sort', 'furrow_copy'] },
   granary:  { web: 0, fns: ['granary_read', 'granary_write', 'granary_append', 'granary_exists', 'granary_remove'] },
   pantry:   { web: 0, fns: ['pantry_open', 'pantry_exec', 'pantry_query', 'pantry_close'] },
   barn:     { web: 0, fns: ['barn_open', 'barn_label', 'barn_button', 'barn_slider', 'barn_textbox', 'barn_wait', 'barn_close'] },
-  tassel:   { web: 0, fns: ['tassel_tcl', 'tassel_tk'] },
 };
 export const MODULE_OF = Object.fromEntries(Object.entries(STDLIB).flatMap(([m, d]) => d.fns.map(f => [f, m])));
 // Library blocks offered in the browser. porch has its own blocks, and almanac (the clock) is left out on purpose:
 // Pounce replays a program from the top for every answer (see session.js), and a clock would differ each time.
 export const LIB_FNS = Object.entries(STDLIB).filter(([m, d]) => d.web && m !== 'porch' && m !== 'almanac').flatMap(([, d]) => d.fns);
 export const DESKTOP_FNS = Object.entries(STDLIB).filter(([, d]) => !d.web).flatMap(([, d]) => d.fns);
-export const CATS = { out:'Output', inp:'Input', var:'Variables', ctl:'Control', fn:'Recipes (functions)', lib:'Standard library', mod:'Modules', mem:'Memory (--no-gc)', desk:'Desktop-only (no-op in browser)', note:'Notes' };
+export const CATS = { out:'Output', inp:'Input', var:'Variables', ctl:'Control', fn:'Recipes (functions)', lib:'Standard library', list:'Lists & arrays', mod:'Modules', mem:'Memory (--no-gc)', desk:'Desktop-only (no-op in browser)', note:'Notes' };
 const F = (k, w) => ({ k, w });
 export const BLOCKS = {
   pop:    { cat:'out', parts:['pop(', F('a',180), ')'], def:{a:'"Hello, World!"'}, gen:b=>`pop(${b.a})` },
@@ -39,6 +43,21 @@ export const BLOCKS = {
   run:    { cat:'fn', parts:[F('a',90), '(', F('b',150), ')'], def:{a:'greet',b:'"Ada"'}, needs:'0.0.9', gen:b=>`${b.a}(${b.b})` },
   // Standard library calls that also work in the browser. Pounce adds the `shuck` line.
   lib:    { cat:'lib', parts:['set', F('a',70), '=', { k:'fn', opts:LIB_FNS }, '(', F('b',150), ')'], def:{a:'result',fn:'kernel_upper',b:'"corn"'}, needs:'0.0.9', gen:b=>`set ${b.a} = ${b.fn}(${b.b})` },
+  // Lists (bushel, grows) and arrays (furrow, fixed length), Cob 0.0.10+. A list or array is a handle held in a variable,
+  // so `a` is always the variable's name. Positions count from 0.
+  // Cob 0.1.0 list syntax: [..] literals, name[i] (negative counts from the end), and for-each.
+  listlit:  { cat:'list', parts:['set', F('a',90), '= [', F('b',170), ']'], def:{a:'fruit',b:'"pear", "apple", "fig"'}, needs:'0.1.0', gen:b=>`set ${b.a} = [${b.b}]` },
+  listidx:  { cat:'list', parts:['set', F('a',80), '=', F('b',90), '[', F('c',60), ']'], def:{a:'item',b:'fruit',c:'-1'}, needs:'0.1.0', gen:b=>`set ${b.a} = ${b.b}[${b.c}]` },
+  listput:  { cat:'list', parts:[F('a',90), '[', F('b',60), '] =', F('c',110)], def:{a:'fruit',b:'0',c:'"fig"'}, needs:'0.1.0', gen:b=>`set ${b.a}[${b.b}] = ${b.c}` },
+  foreach:  { cat:'list', parts:['for each', F('a',80), 'in', F('b',120), ':'], def:{a:'item',b:'fruit'}, c:1, needs:'0.1.0', gen:b=>`for ${b.a} in ${b.b}:` },
+  newlist:  { cat:'list', parts:['set', F('a',90), '= bushel_new()'], def:{a:'fruit'}, needs:'0.0.10', gen:b=>`set ${b.a} = bushel_new()` },
+  listadd:  { cat:'list', parts:['bushel_push(', F('a',90), ',', F('b',140), ')'], def:{a:'fruit',b:'"pear"'}, needs:'0.0.10', gen:b=>`bushel_push(${b.a}, ${b.b})` },
+  listget:  { cat:'list', parts:['set', F('a',80), '= bushel_get(', F('b',90), ',', F('c',60), ')'], def:{a:'item',b:'fruit',c:'0'}, needs:'0.0.10', gen:b=>`set ${b.a} = bushel_get(${b.b}, ${b.c})` },
+  listlen:  { cat:'list', parts:['set', F('a',80), '= bushel_len(', F('b',90), ')'], def:{a:'n',b:'fruit'}, needs:'0.0.10', gen:b=>`set ${b.a} = bushel_len(${b.b})` },
+  listsort: { cat:'list', parts:['bushel_sort(', F('a',90), ')'], def:{a:'fruit'}, needs:'0.0.10', gen:b=>`bushel_sort(${b.a})` },
+  newarray: { cat:'list', parts:['set', F('a',90), '= furrow_new(', F('b',60), ')'], def:{a:'row',b:'5'}, needs:'0.0.10', gen:b=>`set ${b.a} = furrow_new(${b.b})` },
+  arrset:   { cat:'list', parts:['furrow_set(', F('a',90), ',', F('b',60), ',', F('c',100), ')'], def:{a:'row',b:'0',c:'7'}, needs:'0.0.10', gen:b=>`furrow_set(${b.a}, ${b.b}, ${b.c})` },
+  arrget:   { cat:'list', parts:['set', F('a',80), '= furrow_get(', F('b',90), ',', F('c',60), ')'], def:{a:'x',b:'row',c:'0'}, needs:'0.0.10', gen:b=>`set ${b.a} = furrow_get(${b.b}, ${b.c})` },
   shuck:  { cat:'mod', parts:['shuck', F('a',110)], def:{a:'greeter'}, gen:b=>`shuck ${b.a}` },
   harvest:{ cat:'mem', parts:['set', F('a',80), '= harvest(', F('b',70), ')'], def:{a:'buffer',b:'1024'}, nogc:1, gen:b=>`set ${b.a} = harvest(${b.b})` },
   trash:  { cat:'mem', parts:['trash(', F('a',90), ')'], def:{a:'buffer'}, nogc:1, gen:b=>`trash(${b.a})` },
@@ -68,8 +87,11 @@ export function calledNames(lines) {
   }
   return names;
 }
+// Does the program use the Cob 0.1.0 list syntax (a [..] list or index, or a for-in loop)? Strings and comments don't count.
+export const listSyntax = lines => lines.some(t => { const u = t.replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/#.*$/, ''); return /\[/.test(u) || /^\s*for\s+\w+\s+in\b/.test(u); });
 export function modulesUsed(lines) {
   const used = new Set([...calledNames(lines)].map(n => MODULE_OF[n]).filter(Boolean));
+  if (listSyntax(lines)) used.add('bushel');
   return Object.keys(STDLIB).filter(m => used.has(m));
 }
 // The program's lines, with `shuck <module>` lines on top for every library it uses (unless the
@@ -88,11 +110,18 @@ export const gen = list => genLines(list).map(l => l.t + '\n').join('');
 export const usesNoGC = l => l.some(b => BLOCKS[b.t]?.nogc || (b.body && usesNoGC(b.body)));
 export const usesInput = l => l.some(b => BLOCKS[b.t]?.input || (b.body && usesInput(b.body)));
 // The newest Cob version any block in the script needs (null if it needs nothing special).
-export function minCob(l, best = null) {
+const needsOf = (l, best) => {
   for (const b of l) {
     const n = BLOCKS[b.t]?.needs; if (n && (!best || !atLeast(best, n))) best = n;
-    if (b.body) best = minCob(b.body, best);
+    if (b.body) best = needsOf(b.body, best);
   }
+  return best;
+};
+export function minCob(l) {
+  let best = needsOf(l, null);
+  if (listSyntax(emit(l, '', []).map(x => x.t)) && (!best || !atLeast(best, '0.1.0'))) best = '0.1.0';   // typed into any box counts too
+  // a library function typed into any box counts too: bushel and furrow need a newer Cob than the rest
+  for (const m of modulesUsed(emit(l, '', []).map(x => x.t))) { const n = STDLIB[m].since; if (n && (!best || !atLeast(best, n))) best = n; }
   return best;
 }
 // '0.0.8' >= '0.0.7' style comparison for the Cob version the WASM build reports.
@@ -150,7 +179,7 @@ export function lint(list, out = [], ctx = { top: true, inRecipe: false, all: li
       out.push({ id: b.id, level: 'error', text: 'A block has an empty box.', hint: 'Fill in every box, or delete the block.' });
     if (boxes.some(p => quotes(String(b[p.k] ?? '')) % 2))
       out.push({ id: b.id, level: 'error', text: 'A quote mark " is missing.', hint: 'Words need a quote at the start and the end, like "Hello".' });
-    if (['set', 'harvest', 'ask', 'asknum', 'lib'].includes(b.t) && b.a.trim() && !IDENT.test(b.a.trim()))
+    if (['set', 'harvest', 'ask', 'asknum', 'lib', 'newlist', 'listadd', 'listget', 'listlen', 'listsort', 'newarray', 'arrset', 'arrget', 'listlit', 'listidx', 'listput', 'foreach'].includes(b.t) && b.a.trim() && !IDENT.test(b.a.trim()))
       out.push({ id: b.id, level: 'warn', text: `"${b.a.trim()}" may not work as a variable name.`, hint: 'Use one word with letters, numbers and _ only, like score or my_score.' });
     if (b.t === 'recipe') {
       const name = b.a.trim();

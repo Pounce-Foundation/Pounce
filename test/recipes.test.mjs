@@ -46,7 +46,7 @@ test('library blocks add the right shuck lines, once, and only for what is used'
 test('library tables: every function has one module, blocks only offer what the browser can run', () => {
   assert.equal(Object.keys(MODULE_OF).length, Object.values(STDLIB).reduce((n, d) => n + d.fns.length, 0));
   assert.ok(LIB_FNS.includes('kernel_upper') && LIB_FNS.includes('scatter_rand') && !LIB_FNS.includes('almanac_now') && !LIB_FNS.includes('porch_ask'));
-  assert.ok(DESKTOP_FNS.includes('pantry_open') && DESKTOP_FNS.includes('barn_open') && DESKTOP_FNS.includes('tassel_tcl') && !DESKTOP_FNS.includes('kernel_len'));
+  assert.ok(DESKTOP_FNS.includes('pantry_open') && DESKTOP_FNS.includes('barn_open') && !DESKTOP_FNS.includes('tassel_tcl') && !DESKTOP_FNS.includes('kernel_len'));
   assert.equal(gen(clean([{ t: 'lib', fn: 'nope', a: 'x', b: '1' }])), 'shuck ' + MODULE_OF[LIB_FNS[0]] + '\nset x = ' + LIB_FNS[0] + '(1)\n'); // unknown function replaced by a valid one
   assert.equal(clean([{ t: 'call', fn: 'sql_open', a: 'rc', b: '"a.db"' }])[0].fn, DESKTOP_FNS[0]);                          // old 0.0.8 names are not trusted from files
 });

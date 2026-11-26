@@ -33,11 +33,23 @@ npm test        # block codegen, input replay, worker and .pounce format tests (
 - **Library blocks** (`set big = kernel_upper(word)`) use Cob's corn-themed standard library. Cob's library modules are loaded with
   `shuck`; **Pounce writes the shuck lines for you**: any library function that appears in a block (even typed into a `set` box) makes
   Pounce add the right `shuck` at the top of the generated program, unless the script already has its own shuck block for it. The
-  browser build has `porch` (the ask blocks), `cornmath` and `kernels` and `almanac` built in; `pantry` (SQLite), `barn` (windows),
-  `tassel` (Tcl/Tk) and `granary` (files) are desktop-only and are quiet no-ops here, like the Desktop-only blocks always were.
+  browser build has `porch` (the ask blocks), `cornmath`, `kernels`, `almanac`, `bushel` (lists) and `furrow` (arrays) built in;
+  `pantry` (SQLite), `barn` (windows) and `granary` (files) are desktop-only and are quiet no-ops here, like the Desktop-only blocks always were.
 - **Repeatable runs:** because of the replay below, a run must give the same result every time it is replayed. Pounce adds
   `scatter_seed(<n>)` (a new n for each Run click) when a script uses `scatter_rand`, and does not offer `almanac` (clock) blocks; it
   warns if one is typed into a script that also asks questions. The *Code* panel and *Save as .cob* show the program without that seed.
+
+## Lists and arrays (Cob 0.0.10)
+The **Lists & arrays** group has blocks for `bushel` (lists that grow) and `furrow` (arrays with a fixed number of slots):
+**new list** (`set fruit = bushel_new()`), **add to list**, **get item**, **list length**, **sort list**, **new array**
+(`set row = furrow_new(5)`), **set slot** and **get slot**. A list or array lives in a variable, so use the same name in every block.
+Positions and slots count from 0. Every other `bushel_*` and `furrow_*` function is in the *Standard library* block's menu, and Pounce
+writes the `shuck bushel` / `shuck furrow` lines for you. These blocks need a WASM build of Cob 0.0.10 or newer (Pounce says so if it is
+older), and a bad position or a freed list gives a plain-words warning instead of Cob's raw message. Cob 0.1.0 adds Python-style lists, and Pounce has blocks for them: **new list with items**
+(`set fruit = ["pear", "fig"]`), **get item** by position with `-1` for the last one (`set last = fruit[-1]`), **set item**
+(`set fruit[0] = "fig"`) and **for each** (`for item in fruit:`). They need a WASM build of Cob 0.1.0 or newer, and `shuck bushel`
+is added for you even when you type a `[ ]` list or a for loop into an ordinary box. Two examples, *Shopping list*
+and *Row of numbers*, are in the **Examples** menu.
 
 ## Asking questions (porch)
 The **Input** blocks, `set name = porch_ask("…")` and `set age = porch_ask_int("…")` (the `porch` library), ask the person running
@@ -49,7 +61,7 @@ randomness (see above), clock or files. `cob-worker.js` feeds one answer per `re
 asks more than 500 questions is stopped. A non-number typed into `porch_ask_int` gives 0 plus a friendly warning.
 
 ## Cob in the browser
-The `pantry_*`, `barn_*`, `tassel_*` and `granary_*` functions and `extern` are silent no-ops with a one-time notice per library in
+The `pantry_*`, `barn_*` and `granary_*` functions and `extern` are silent no-ops with a one-time notice per library in
 the WASM build. Pounce marks them as desktop-only. `harvest`/`trash` need `--no-gc`, which Pounce passes automatically when a script uses them.
 `if`, `else if` and `else` blocks need Cob 0.0.7 or newer (that is where Cob gained `if`/`elif`/`else`). `else if` and `else`
 are separate blocks that must sit directly under an `if` (or `else if`), lined up with it. Pounce checks that before running, and

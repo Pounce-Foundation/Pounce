@@ -21,6 +21,15 @@ const RULES = [
   [/can only be defined at the top|expected a name after 'recipe'|after recipe |expected ':' at the end of the recipe line|parameters? (?:name )?(?:of|in) recipe|has two parameters named/, () => ["The recipe block isn't filled in correctly.", 'Give it a one-word name, and list its inputs as one-word names separated by commas, like a, b.']],
   [/bad expression after 'serve'|unexpected text after the serve expression/, () => ["Cob couldn't understand the value in your serve block.", 'Use a number, words in quotes, or math like a + b.']],
   [/malformed call|unexpected text after the call/, () => ["Cob couldn't understand a recipe call.", 'Write the recipe name, then its values in brackets, like greet("Ada") or add(2, 3).']],
+  // lists (bushel) and arrays (furrow), Cob 0.0.10
+  [/^(\w+)\(\) -- (list|array) (-?\d+) is invalid or already freed/, m => [`The ${m[2]} used in ${m[1]}() doesn't exist, so Cob did nothing.`, `Make it first with a ${m[2] === 'list' ? 'new list' : 'new array'} block, and use the same name for it afterwards. A freed ${m[2]} can't be used again.`]],
+  [/^(\w+)\(\) -- position (-?\d+) is out of range \(the list has (\d+) items?\)/, m => [`Position ${m[2]} isn't in the list: it has ${m[3]} item${m[3] === '1' ? '' : 's'}.`, `Positions start at 0, so the first item is position 0 and the last is one less than the length.`]],
+  [/^(\w+)\(\) -- slot (-?\d+) is out of range \(the array has (\d+) slots?\)/, m => [`Slot ${m[2]} isn't in the array: it has ${m[3]} slot${m[3] === '1' ? '' : 's'}.`, `Slots start at 0, so the first slot is 0 and the last is one less than the length. An array can't grow; use a list if you need that.`]],
+  [/^furrow_new\((-?\d+)\) -- the length must be between 0 and (\d+)/, m => [`An array can't have ${m[1]} slots.`, `Use a length from 0 to ${m[2]}.`]],
+  [/a list cannot hold more than/, () => ['That list is full, so the new item was not added.', 'A list holds at most 10,000,000 items.']],
+  // Cob 0.1.0 list syntax
+  [/expected ':' to open for block|malformed expression in for statement/, () => ["Cob couldn't understand your for each block.", 'It needs the name of a list, like fruit, or a list in square brackets, like [1, 2, 3].']],
+  [/close the index in set statement|malformed index in set statement/, () => ['The position in square brackets does not match up.', 'Put a number in [ ], like fruit[0], and check for a missing ].']],
   [/^malformed expression in pop/, () => ["Cob couldn't understand what is inside pop( ).", 'Put words in quotes ("Hi") and join things with +, like "Score: " + score.']],
   [/^malformed expression in set/, () => ["Cob couldn't understand the value in your set block.", 'Use a number like 5, words in quotes like "Ada", or math like score + 1.']],
   [/^expected '=' in set/, () => ['A set block needs a name and then a value.', 'Names are one word with no spaces, like score or my_score.']],
