@@ -89,6 +89,10 @@ export function calledNames(lines) {
 }
 // Does the program use the Cob 0.1.0 list syntax (a [..] list or index, or a for-in loop)? Strings and comments don't count.
 export const listSyntax = lines => lines.some(t => { const u = t.replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/#.*$/, ''); return /\[/.test(u) || /^\s*for\s+\w+\s+in\b/.test(u); });
+// Other Cob 0.1.0 syntax that can be typed into any box: and / or / not in a condition, and a # comment after code.
+const noStrings = t => t.replace(/"(?:[^"\\]|\\.)*"/g, '""');
+export const boolSyntax = lines => lines.some(t => /^\s*(if|elif|while)\b/.test(t) && /\b(and|or|not)\b/.test(noStrings(t).replace(/#.*$/, '')));
+export const trailingComment = lines => lines.some(t => !/^\s*#/.test(t) && noStrings(t).includes('#'));
 export function modulesUsed(lines) {
   const used = new Set([...calledNames(lines)].map(n => MODULE_OF[n]).filter(Boolean));
   if (listSyntax(lines)) used.add('bushel');
@@ -119,7 +123,8 @@ const needsOf = (l, best) => {
 };
 export function minCob(l) {
   let best = needsOf(l, null);
-  if (listSyntax(emit(l, '', []).map(x => x.t)) && (!best || !atLeast(best, '0.1.0'))) best = '0.1.0';   // typed into any box counts too
+  const text = emit(l, '', []).map(x => x.t);
+  if ((listSyntax(text) || boolSyntax(text) || trailingComment(text)) && (!best || !atLeast(best, '0.1.0'))) best = '0.1.0';   // typed into any box counts too
   // a library function typed into any box counts too: bushel and furrow need a newer Cob than the rest
   for (const m of modulesUsed(emit(l, '', []).map(x => x.t))) { const n = STDLIB[m].since; if (n && (!best || !atLeast(best, n))) best = n; }
   return best;

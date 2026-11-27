@@ -1,7 +1,7 @@
 // Lists (bushel) and arrays (furrow), Cob 0.0.10: blocks, automatic shuck lines, version gating, friendly errors.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { gen, genLines, lint, make, clean, minCob, listSyntax, modulesUsed, STDLIB, LIB_FNS, DESKTOP_FNS, MODULE_OF, BLOCKS, CATS } from '../src/js/blocks.js';
+import { gen, genLines, lint, make, clean, minCob, listSyntax, boolSyntax, trailingComment, modulesUsed, STDLIB, LIB_FNS, DESKTOP_FNS, MODULE_OF, BLOCKS, CATS } from '../src/js/blocks.js';
 import { explain } from '../src/js/errors.js';
 import { EXAMPLES } from '../src/js/examples.js';
 
@@ -108,4 +108,15 @@ test('Cob messages for the new syntax are explained in plain words', () => {
   assert.match(e("[cob_interp] syntax error at line 3: expected ':' to open for block").msg, /for each block/);
   assert.match(e('[cob_interp] syntax error at line 2: malformed expression in for statement').hint, /name of a list/);
   assert.match(e("[cob_interp] syntax error at line 4: expected ']' to close the index in set statement").msg, /square brackets/);
+});
+
+test('and / or / not and trailing comments typed into a box need Cob 0.1.0', () => {
+  assert.ok(boolSyntax(['if a > 1 and b < 2:']) && boolSyntax(['    while not done:']) && boolSyntax(['elif (a or b) and c:']));
+  assert.ok(!boolSyntax(['if a > 1:']) && !boolSyntax(['pop("this and that")']) && !boolSyntax(['set x = a or b']) && !boolSyntax(['if a > 1:  # or maybe not']));
+  assert.ok(trailingComment(['set x = 1  # note']) && trailingComment(['pop(x) # hi']));
+  assert.ok(!trailingComment(['# a whole-line note']) && !trailingComment(['    # (empty)']) && !trailingComment(['pop("# not a comment")']));
+  assert.equal(minCob([make('if', { a: 'x > 1 and y < 2' })]), '0.1.0');
+  assert.equal(minCob([make('set', { a: 'x', b: '1  # one' })]), '0.1.0');
+  assert.equal(minCob([make('if', { a: 'x > 1' })]), null);
+  assert.equal(minCob([make('note', { a: 'a comment' })]), null);
 });

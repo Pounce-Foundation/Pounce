@@ -4,7 +4,7 @@ Block coding for [Cob](https://github.com/Cob-Software-Foundation/Cob). Snap blo
 on a WebAssembly build of the real `cob_interp`. Made with the Cob Software Foundation and the Pouce Foundation.
 
 ## How it fits together
-- `scripts/build-wasm.sh` fetches Cob (`COB_REF`: branch, tag or commit; currently `v0.1.0` (beta), pinned for reproducible builds)
+- `scripts/build-wasm.sh` fetches Cob (`COB_REF`: branch, tag or commit; currently `v0.1.1` (beta), pinned for reproducible builds)
   and runs Cob's own `make wasm`, which builds `crates/cob-wasm` with Cargo for `wasm32-unknown-unknown`. Output goes to `dist/wasm/`.
   Its loader, `docs/play/cob_interp.js`, needs one fix to run inside a Web Worker; `scripts/cob-glue-worker.patch` applies it (skipped once
   the pinned Cob already contains it).
@@ -47,7 +47,7 @@ Positions and slots count from 0. Every other `bushel_*` and `furrow_*` function
 writes the `shuck bushel` / `shuck furrow` lines for you. These blocks need a WASM build of Cob 0.0.10 or newer (Pounce says so if it is
 older), and a bad position or a freed list gives a plain-words warning instead of Cob's raw message. Cob 0.1.0 adds Python-style lists, and Pounce has blocks for them: **new list with items**
 (`set fruit = ["pear", "fig"]`), **get item** by position with `-1` for the last one (`set last = fruit[-1]`), **set item**
-(`set fruit[0] = "fig"`) and **for each** (`for item in fruit:`). They need a WASM build of Cob 0.1.0 or newer, and `shuck bushel`
+(`set fruit[0] = "fig"`) and **for each** (`for item in fruit:`). Typing `and` / `or` / `not` into an `if` or `while` condition, or a `#` comment after code, needs Cob 0.1.0 too, and Pounce checks for it. They need a WASM build of Cob 0.1.0 or newer, and `shuck bushel`
 is added for you even when you type a `[ ]` list or a for loop into an ordinary box. Two examples, *Shopping list*
 and *Row of numbers*, are in the **Examples** menu.
 
